@@ -153,10 +153,14 @@ fn parse_expression(lexer: &mut Lexer, min_bp: f32) -> Expression {
             Token::Op(op) => op,
             t => panic!("bad token: {:?}", t),
         };
+        //My mistake: DO NOT call `lexer.next()` here
         let (l_bp, r_bp) = infix_binding_power(op);
         if l_bp < min_bp {
             break;
         }
+        //In the video, `lexer.next()` is called BEFORE the if statement.
+        //It must be called AFTER the precedence check, because calling it too early
+        //would consume a token that shouldn't be parsed yet—leading to incorrect parse trees.
         lexer.next();
         let rhs = parse_expression(lexer, r_bp);
         lhs = Expression::Operation(op, vec![lhs, rhs]);
